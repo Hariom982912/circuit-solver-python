@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Circuit Selector</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="script.js">
+</head>
+<body>
+  <div class="container">
+    <div class="header">Solve circuit of RC RL and RLC</div>
+    <h1 class="title">select circuit type</h1>
+
+    <select id="circuitSelect">
+      <option value="">-- Select Circuit --</option>
+      <option value="rc.html">RC Circuit</option>
+      <option value="rl.html">RL Circuit</option>
+      <option value="rlc.html">RLC Circuit</option>
+    </select>
+
+    <button onclick="proceed()">proceed</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RLC Circuit Solver</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 650px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+
+    canvas {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>RLC Circuit Solver</h1>
+
+    <label for="voltage">Voltage (V):</label>
+    <input type="number" id="voltage" placeholder="Enter voltage in volts" />
+
+    <label for="resistance">Resistance (Ω):</label>
+    <input type="number" id="resistance" placeholder="Enter resistance in ohms" />
+
+    <label for="inductance">Inductance (mH):</label>
+    <input type="number" id="inductance" placeholder="Enter inductance in millihenries" />
+
+    <label for="capacitance">Capacitance (µF):</label>
+    <input type="number" id="capacitance" placeholder="Enter capacitance in microfarads" />
+
+    <button onclick="solveRLC()">Plot RLC Graph</button>
+
+    <div id="result"></div>
+    <canvas id="plot" width="600" height="400"></canvas>
+  </div>
+
+  <script>
+    function solveRLC() {
+      const V = parseFloat(document.getElementById("voltage").value);
+      const R = parseFloat(document.getElementById("resistance").value);
+      const L = parseFloat(document.getElementById("inductance").value) * 1e-3; // mH to H
+      const C = parseFloat(document.getElementById("capacitance").value) * 1e-6; // µF to F
+
+      if (isNaN(V) || isNaN(R) || isNaN(L) || isNaN(C) || L === 0 || C === 0) {
+        alert("Please enter valid non-zero values.");
+        return;
+      }
+
+      const alpha = R / (2 * L);
+      const omega_0 = 1 / Math.sqrt(L * C);
+      const omega_d = Math.sqrt(Math.abs(omega_0 ** 2 - alpha ** 2));
+      const t = [];
+      const response = [];
+
+      for (let i = 0; i <= 1000; i++) {
+        let time = i * 0.0001;
+        t.push(time.toFixed(5));
+
+        if (alpha < omega_0) {
+          // Underdamped
+          response.push((V * Math.exp(-alpha * time) * Math.cos(omega_d * time)).toFixed(4));
+        } else if (alpha === omega_0) {
+          // Critically damped
+          response.push((V * Math.exp(-alpha * time)).toFixed(4));
+        } else {
+          // Overdamped
+          response.push((V * Math.exp(-alpha * time)).toFixed(4));
+        }
+      }
+
+      let dampingType = "";
+      if (alpha < omega_0) dampingType = "Underdamped";
+      else if (alpha === omega_0) dampingType = "Critically Damped";
+      else dampingType = "Overdamped";
+
+      document.getElementById("result").innerText =
+        `α = ${alpha.toFixed(3)}, ω₀ = ${omega_0.toFixed(3)}, ωd = ${omega_d.toFixed(3)} → ${dampingType}`;
+
+      const ctx = document.getElementById("plot").getContext("2d");
+      if (window.rlcChart) window.rlcChart.destroy();
+
+      window.rlcChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: t,
+          datasets: [{
+            label: "Voltage across Capacitor",
+            data: response,
+            borderColor: "purple",
+            fill: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "RLC Circuit Response"
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Time (s)"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Voltage (V)"
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

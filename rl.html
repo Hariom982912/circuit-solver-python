@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RL Circuit Solver</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef4fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+
+    canvas {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>RL Circuit Solver</h1>
+
+    <label for="voltage">Voltage (V):</label>
+    <input type="number" id="voltage" placeholder="Enter voltage in volts" />
+
+    <label for="resistance">Resistance (Ω):</label>
+    <input type="number" id="resistance" placeholder="Enter resistance in ohms" />
+
+    <label for="inductance">Inductance (mH):</label>
+    <input type="number" id="inductance" placeholder="Enter inductance in millihenries" />
+
+    <button onclick="solveRLCircuit()">Plot RL Graph</button>
+
+    <div id="result"></div>
+    <canvas id="plot" width="600" height="400"></canvas>
+  </div>
+
+  <script>
+    function solveRLCircuit() {
+      const V = parseFloat(document.getElementById("voltage").value);
+      const R = parseFloat(document.getElementById("resistance").value);
+      const L = parseFloat(document.getElementById("inductance").value) * 1e-3; // mH to H
+
+      if (isNaN(V) || isNaN(R) || isNaN(L) || R === 0 || L === 0) {
+        alert("Please enter valid non-zero values.");
+        return;
+      }
+
+      const tau = L / R;
+      document.getElementById("result").innerText = `Time Constant (τ = L/R): ${tau.toExponential(3)} sec`;
+
+      const t = [];
+      const I = [];
+
+      for (let i = 0; i <= 100; i++) {
+        let time = i * (5 * tau) / 100;
+        t.push(time.toFixed(4));
+        I.push((V / R) * (1 - Math.exp(-time / tau)));
+      }
+
+      const ctx = document.getElementById("plot").getContext("2d");
+      if (window.rlChart) window.rlChart.destroy();
+
+      window.rlChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: t,
+          datasets: [{
+            label: "Current I(t)",
+            data: I,
+            borderColor: "blue",
+            fill: false,
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "RL Circuit - Current Growth Over Time"
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Time (s)"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Current (A)"
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
