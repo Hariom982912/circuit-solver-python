@@ -10,7 +10,7 @@ This is a simple and interactive web app to simulate **RC, RL, and RLC circuits*
 - Real-time plotting of current/voltage using HTML canvas
 
 ## 🖥️ Demo Link
-👉 [Click here to try the app]()
+👉 [Click here to try the app](https://github.com/Hariom982912/circuit-solver-python/tree/main)
 
 
 ## 🚀 How to Use
